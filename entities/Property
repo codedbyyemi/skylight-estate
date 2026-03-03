@@ -1,0 +1,83 @@
+{
+  "name": "Property",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Property title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed property description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Property price in Naira"
+    },
+    "location": {
+      "type": "string",
+      "description": "Property location"
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "house",
+        "apartment",
+        "duplex",
+        "mansion",
+        "land",
+        "commercial"
+      ],
+      "description": "Type of property"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "sold",
+        "pending"
+      ],
+      "default": "available"
+    },
+    "bedrooms": {
+      "type": "number",
+      "description": "Number of bedrooms"
+    },
+    "bathrooms": {
+      "type": "number",
+      "description": "Number of bathrooms"
+    },
+    "size": {
+      "type": "string",
+      "description": "Property size (e.g., 450 sqm)"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Main property image URL"
+    },
+    "gallery": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional property images"
+    },
+    "amenities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Property amenities"
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "location",
+    "property_type"
+  ]
+}
