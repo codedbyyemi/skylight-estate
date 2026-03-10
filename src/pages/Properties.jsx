@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
@@ -7,6 +8,84 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import PropertyCard from '@/components/PropertyCard';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const heroVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  }
+};
+
+const searchVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      delay: 0.3
+    }
+  }
+};
+
+const resultsVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delay: 0.4
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (custom) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      delay: 0.5 + custom * 0.1,
+      ease: "easeOut"
+    }
+  }),
+  exit: {
+    opacity: 0,
+    y: -20,
+    transition: {
+      duration: 0.3
+    }
+  }
+};
+
+const emptyStateVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      delay: 0.3
+    }
+  }
+};
 
 export default function Properties() {
   const [search, setSearch] = useState('');
@@ -134,16 +213,24 @@ export default function Properties() {
     return matchesSearch && matchesType && matchesStatus && matchesPrice;
   });
 
-  // FilterContent component (keep your existing code)
+  // FilterContent component with dark mode support
   const FilterContent = () => (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Property Type
+        </label>
         <Select value={propertyType} onValueChange={setPropertyType}>
-          <SelectTrigger>
+          <SelectTrigger className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="house">House</SelectItem>
             <SelectItem value="apartment">Apartment</SelectItem>
@@ -156,12 +243,14 @@ export default function Properties() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Price Range
+        </label>
         <Select value={priceRange} onValueChange={setPriceRange}>
-          <SelectTrigger>
+          <SelectTrigger className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectValue placeholder="All Prices" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectItem value="all">All Prices</SelectItem>
             <SelectItem value="0-50000000">Under ₦50M</SelectItem>
             <SelectItem value="50000000-100000000">₦50M - ₦100M</SelectItem>
@@ -173,12 +262,14 @@ export default function Properties() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Status
+        </label>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger>
+          <SelectTrigger className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="available">Available</SelectItem>
             <SelectItem value="sold">Sold</SelectItem>
@@ -187,55 +278,87 @@ export default function Properties() {
         </Select>
       </div>
 
-      <Button 
-        variant="outline" 
-        className="w-full"
-        onClick={() => {
-          setPropertyType('all');
-          setPriceRange('all');
-          setStatus('all');
-        }}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
-        <X className="h-4 w-4 mr-2" />
-        Clear Filters
-      </Button>
-    </div>
+        <Button 
+          variant="outline" 
+          className="w-full dark:bg-gray-800 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700"
+          onClick={() => {
+            setPropertyType('all');
+            setPriceRange('all');
+            setStatus('all');
+          }}
+        >
+          <X className="h-4 w-4 mr-2" />
+          Clear Filters
+        </Button>
+      </motion.div>
+    </motion.div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+    >
       {/* Hero */}
-      <div className="bg-gradient-to-br from-purple-900 via-purple-800 to-violet-900 py-20">
+      <motion.div 
+        variants={heroVariants}
+        className="bg-gradient-to-br from-purple-900 via-purple-800 to-violet-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20"
+      >
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-4xl md:text-5xl font-bold text-white mb-4"
+          >
             Our Properties
-          </h1>
-          <p className="text-purple-200 text-lg max-w-2xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-purple-200 dark:text-gray-300 text-lg max-w-2xl mx-auto"
+          >
             Browse through our extensive collection of premium properties across Nigeria
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
 
       <div className="container mx-auto px-4 py-12">
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+        <motion.div 
+          variants={searchVariants}
+          className="flex flex-col md:flex-row gap-4 mb-8"
+        >
+          <motion.div 
+            whileHover={{ scale: 1.01 }}
+            className="relative flex-1"
+          >
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
             <Input
               placeholder="Search by title or location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 py-6 rounded-full"
+              className="pl-12 py-6 rounded-full bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700 dark:placeholder:text-gray-500"
             />
-          </div>
+          </motion.div>
           
           {/* Desktop Filters */}
-          <div className="hidden lg:flex gap-4">
+          <motion.div 
+            variants={searchVariants}
+            className="hidden lg:flex gap-4"
+          >
             <Select value={propertyType} onValueChange={setPropertyType}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="house">House</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
@@ -247,10 +370,10 @@ export default function Properties() {
             </Select>
 
             <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectItem value="all">All Prices</SelectItem>
                 <SelectItem value="0-50000000">Under ₦50M</SelectItem>
                 <SelectItem value="50000000-100000000">₦50M - ₦100M</SelectItem>
@@ -261,67 +384,139 @@ export default function Properties() {
             </Select>
 
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="available">Available</SelectItem>
                 <SelectItem value="sold">Sold</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </motion.div>
 
           {/* Mobile Filter Button */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden">
-                <SlidersHorizontal className="h-5 w-5 mr-2" />
-                Filters
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="outline" className="lg:hidden dark:bg-gray-800 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700">
+                  <SlidersHorizontal className="h-5 w-5 mr-2" />
+                  Filters
+                </Button>
+              </motion.div>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="dark:bg-gray-900 dark:text-white dark:border-gray-800">
               <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
+                <SheetTitle className="dark:text-white">Filters</SheetTitle>
               </SheetHeader>
               <div className="mt-6">
                 <FilterContent />
               </div>
             </SheetContent>
           </Sheet>
-        </div>
+        </motion.div>
 
         {/* Results Count */}
-        <p className="text-gray-600 mb-6">
+        <motion.p 
+          variants={resultsVariants}
+          className="text-gray-600 dark:text-gray-400 mb-6"
+        >
           Showing {filteredProperties.length} properties
-        </p>
+        </motion.p>
 
         {/* Properties Grid */}
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
-                <div className="h-64 bg-gray-200"></div>
+              <motion.div
+                key={i}
+                variants={cardVariants}
+                custom={i}
+                className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg animate-pulse"
+              >
+                <div className="h-64 bg-gray-200 dark:bg-gray-700"></div>
                 <div className="p-6">
-                  <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
-        ) : filteredProperties.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
+          </motion.div>
         ) : (
-          <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">No properties found matching your criteria</p>
-          </div>
+          <AnimatePresence mode="wait">
+            {filteredProperties.length > 0 ? (
+              <motion.div 
+                key="results"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0 }}
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
+                {filteredProperties.map((property, index) => (
+                  <motion.div
+                    key={property.id}
+                    variants={cardVariants}
+                    custom={index}
+                    layout
+                  >
+                    <PropertyCard property={property} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                variants={emptyStateVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0 }}
+                className="text-center py-20"
+              >
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                  className="inline-block mb-4"
+                >
+                  <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto" />
+                </motion.div>
+                <p className="text-gray-500 dark:text-gray-400 text-lg">
+                  No properties found matching your criteria
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setSearch('');
+                    setPropertyType('all');
+                    setPriceRange('all');
+                    setStatus('all');
+                  }}
+                  className="mt-4 text-purple-600 dark:text-purple-400 font-semibold hover:underline"
+                >
+                  Clear all filters
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
