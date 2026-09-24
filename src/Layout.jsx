@@ -17,6 +17,8 @@ export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [scrollingUp, setScrollingUp] = useState(false);
   const location = useLocation();
   
   const isHome = currentPageName === 'Home';
@@ -32,22 +34,33 @@ export default function Layout({ children, currentPageName }) {
     }
   }, []);
 
-  // Handle scroll effect for navbar
+  // Handle scroll effect for navbar with direction detection
   useEffect(() => {
     const handleScroll = () => {
-      const offset = window.scrollY;
-      if (offset > 50) {
+      const currentScrollY = window.scrollY;
+      
+      // Determine scroll direction - IMMEDIATELY set scrollingUp true when scrolling up
+      if (currentScrollY < lastScrollY) {
+        setScrollingUp(true); // Scrolling up - IMMEDIATELY true
+      } else if (currentScrollY > lastScrollY) {
+        setScrollingUp(false); // Scrolling down
+      }
+      
+      // Update scroll position state
+      if (currentScrollY > 50) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
+      
+      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [lastScrollY]);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -62,12 +75,64 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
-  // Determine header background based on scroll and page
+  // Determine header background based on scroll direction
   const getHeaderClass = () => {
-    if (scrolled) {
+    // IMMEDIATELY turn white when scrolling up (as soon as you scroll up)
+    if (scrollingUp && scrolled) {
+      return 'bg-white shadow-lg';
+    }
+    
+    // When scrolling down, use purple
+    if (!scrollingUp && scrolled) {
       return 'bg-purple-900 dark:bg-gray-900 shadow-lg';
     }
-    return isHome ? 'bg-transparent' : 'bg-purple-900 dark:bg-gray-900';
+    
+    // At the top of home page, transparent
+    if (isHome && !scrolled) {
+      return 'bg-transparent';
+    }
+    
+    // Default for other pages at top
+    return 'bg-purple-900 dark:bg-gray-900';
+  };
+
+  // Determine text color based on scroll state and background
+  const getTextColorClass = (isActive = false) => {
+    if (isActive) {
+      return 'text-orange-400'; // Active links always orange
+    }
+    
+    if (scrollingUp && scrolled) {
+      // White background - use dark text
+      return 'text-gray-700 hover:text-orange-400 dark:text-gray-300 dark:hover:text-orange-400';
+    }
+    
+    // Default - white text on purple/dark backgrounds
+    return 'text-white hover:text-orange-400 dark:text-gray-300 dark:hover:text-orange-400';
+  };
+
+  // Get logo text color class
+  const getLogoTextClass = () => {
+    if (scrollingUp && scrolled) {
+      return 'text-gray-800 dark:text-white';
+    }
+    return 'text-white';
+  };
+
+  // Get logo subtitle color class
+  const getLogoSubtitleClass = () => {
+    if (scrollingUp && scrolled) {
+      return 'text-gray-500 dark:text-gray-400';
+    }
+    return 'text-purple-300 dark:text-gray-400';
+  };
+
+  // Get button icon color
+  const getButtonIconClass = () => {
+    if (scrollingUp && scrolled) {
+      return 'text-gray-700 hover:text-orange-400 dark:text-gray-300 dark:hover:text-orange-400';
+    }
+    return 'text-white hover:text-orange-400';
   };
 
   return (
@@ -82,8 +147,12 @@ export default function Layout({ children, currentPageName }) {
                 <Building2 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold text-white">Skylight</span>
-                <span className="block text-xs text-purple-300 dark:text-gray-400 -mt-1">REAL ESTATE</span>
+                <span className={`text-xl font-bold transition-colors duration-300 ${getLogoTextClass()}`}>
+                  Skylight
+                </span>
+                <span className={`block text-xs transition-colors duration-300 ${getLogoSubtitleClass()}`}>
+                  REAL ESTATE
+                </span>
               </div>
             </Link>
 
@@ -96,7 +165,7 @@ export default function Layout({ children, currentPageName }) {
                   className={`text-sm font-medium transition-colors ${
                     currentPageName === link.page
                       ? 'text-orange-400'
-                      : 'text-white hover:text-orange-400 dark:text-gray-300 dark:hover:text-orange-400'
+                      : getTextColorClass()
                   }`}
                 >
                   {link.name.toUpperCase()}
@@ -109,7 +178,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Dark mode toggle */}
               <button
                 onClick={toggleDarkMode}
-                className="p-2 text-white hover:text-orange-400 transition-colors"
+                className={`p-2 transition-colors ${getButtonIconClass()}`}
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -129,7 +198,11 @@ export default function Layout({ children, currentPageName }) {
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild className="lg:hidden">
-                  <Button variant="ghost" size="icon" className="text-white hover:text-orange-400">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={`transition-colors ${getButtonIconClass()}`}
+                  >
                     <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
